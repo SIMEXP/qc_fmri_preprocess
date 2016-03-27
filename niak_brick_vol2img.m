@@ -7,13 +7,39 @@ function [in,out,opt] = niak_brick_vol2img(in,out,opt)
 % IN.TARGET (string, default '') the file name of a 3D volume defining the target space. 
 %   If left empty, or unspecified, IN.VOL is used as the target. 
 % OUT (string) the file name for the figure. The extension will determine the type. 
-% OPT.COORD (array N x 3) 
+% OPT.COORD (array N x 3) coordinates to generate the slices.
 % OPT.COLORBAR (boolean, default true)
 % OPT.COLORMAP (string, default 'gray') The type of colormap. Anything supported by 
 %   the instruction `colormap` will work. 
 % OPT.TITLE (string, default '') a title for the figure. 
 % OPT.LIMITS (vector 1x2) the limits for the colormap. By defaut it is using [min,max].
+%    If a string is specified, the function will implement an adaptative strategy. 
+% OPT.FLAG_TEST (boolean, default false) if the flag is true, the brick does nothing but 
+%    update IN, OUT and OPT.
+%
+% Copyright (c) Pierre Bellec
+% Centre de recherche de l'Institut universitaire de gériatrie de Montréal, 2016.
+% Maintainer : pierre.bellec@criugm.qc.ca
+% See licensing information in the code.
+% Keywords : visualization, montage, 3D brain volumes
 
+% Permission is hereby granted, free of charge, to any person obtaining a copy
+% of this software and associated documentation files (the "Software"), to deal
+% in the Software without restriction, including without limitation the rights
+% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+% copies of the Software, and to permit persons to whom the Software is
+% furnished to do so, subject to the following conditions:
+%
+% The above copyright notice and this permission notice shall be included in
+% all copies or substantial portions of the Software.
+%
+% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+% THE SOFTWARE.
 
 %% Defaults
 in = psom_struct_defaults( in , ...
@@ -25,9 +51,17 @@ if isempty(in.target)
 end
 
 opt = psom_struct_defaults ( opt , ...
-    { 'colorbar' , 'coord' , 'limits' , 'colormap' , 'title' }, ...
-    { true         , NaN     , []        , 'gray'         , ''       });
+    { 'colorbar' , 'coord' , 'limits' , 'colormap' , 'title' , 'flag_test' }, ...
+    { true         , NaN     , []        , 'gray'         , ''       , false         });
 
+if opt.flag_test 
+    return
+end
+
+%% Check the extension of the output 
+[path_f,name_f,ext_f] = fileparts(out);
+ext_f = ext_f(2:end);
+    
 %% Read the data 
 hdr.target = niak_read_vol(in.target);
 [hdr.source,vol] = niak_read_vol(in.source);
@@ -47,6 +81,14 @@ end
 
 %% The image
 hf = figure;
+if ischar(opt.limits)
+    mask = niak_mask_brain(vol);
+    mvol = median(vol(mask));
+    svol = niak_mad(vol(mask));
+    climits = [0 mvol+2*svol];
+    opt.limits = climits;
+end
+
 if isempty(opt.limits)
     climits = [min(img(:)) max(img(:))];
 else
@@ -93,5 +135,5 @@ FS = findall(ha,'-property','FontSize');
 set(FS,'FontSize',8);
 
 %% Save figure
-print(out,'-dpng');
+print(out,['-d' ext_f]);
 close(hf)
