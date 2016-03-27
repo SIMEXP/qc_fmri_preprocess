@@ -1,7 +1,7 @@
 function [img,slices] = niak_vol2img(hdr,vol,coord,opt)
 % Generate an image file with a brain sagital, coronal and axial slices. 
 %
-% [IMG,SLICES] = NIAK_VOL2IMG( VOL , HDR , COORD , INTERP )
+% [IMG,SLICES] = NIAK_VOL2IMG( VOL , HDR , COORD , OPT )
 %
 % HDR.SOURCE (structure) the header of the volume
 % HDR.TARGET (structure) the header of a volume defining the sampling space
