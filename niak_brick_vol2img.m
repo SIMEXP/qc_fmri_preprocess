@@ -122,7 +122,7 @@ ny = size(img,1);
 valy = round(linspace(1,ny,size(opt.coord,1)*2+1));
 label_view = cell(1,size(opt.coord,1));
 for cc = 1:size(opt.coord,1)
-    label_view{cc} = sprintf('(%i,%i,%i)',round(opt.coord(cc,1)),round(opt.coord(cc,2)),round(opt.coord(cc,3)));
+    label_view{cc} = ' ';
 end
 set(ha,'ytick',valy(2*(1:size(opt.coord,1))));
 set(ha,'yticklabelmode','manual')
@@ -133,6 +133,9 @@ set(ha,'yticklabel',label_view);
 %set(FN,'FontName','/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed.ttf');
 FS = findall(ha,'-property','FontSize');
 set(FS,'FontSize',8);
+
+%% Get rid of unecessary white space
+niak_tightfig(hf);
 
 %% Save figure
 print(out,['-d' ext_f]);
