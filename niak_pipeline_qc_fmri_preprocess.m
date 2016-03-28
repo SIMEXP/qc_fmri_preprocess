@@ -1,4 +1,4 @@
-function pipeline = niak_pipeline_qc_fmri_preprocess(in,out,opt)
+function pipe = niak_pipeline_qc_fmri_preprocess(in,opt)
 % Generate anatomical and functional figures to QC coregistration
 %
 % SYNTAX: PIPE = NIAK_PIPELINE_QC_FMRI_PREPROCESS(IN,OPT)
@@ -68,38 +68,80 @@ if (length(fieldnames(in.func))~=length(list_subject))||any(~ismember(list_subje
 end
 
 % Options 
-if nargin < 3
+if nargin < 2
     opt = struct;
 end
 coord_def =[-30 , -65 , -15 ; 
                       -8 , -25 ,  10 ;  
                      30 ,  45 ,  60];
 opt = psom_struct_defaults ( opt , ...
-    { 'folder_out' , 'coord'      , 'flag_test' , 'psom' , 'flag_verbose' }, ...
-    { pwd            , coord_def , false         , struct  , true                 });
+    { 'folder_out' , 'coord'      , 'flag_test' , 'psom'   , 'flag_verbose' }, ...
+    { pwd            , coord_def , false         , struct() , true                 });
 
 opt.folder_out = niak_full_path(opt.folder_out);
 opt.psom.path_logs = [opt.folder_out 'logs' filesep];
 
-%% Add the generation of summary images 
+%% Add the generation of summary images for all subjects
 pipe = struct;
 for ss = 1:length(list_subject)
     subject = list_subject{ss};
     if opt.flag_verbose
-        fprinf('Adding job: QC report for subject %s',subject);
+        fprintf('Adding job: QC report for subject %s\n',subject);
     end
     inj.anat = in.anat.(subject);
     inj.func = in.func.(subject);
     inj.template = in.template;
     outj.anat = [opt.folder_out subject filesep 'summary_' subject '_anat.jpg'];
     outj.func = [opt.folder_out subject filesep 'summary_' subject '_func.jpg'];
-    outj.template = 'gb_niak_omitted';
+    outj.template = [opt.folder_out subject filesep 'summary_template.jpg'];
     outj.report =  [opt.folder_out subject filesep 'report_coregister_' subject '.html'];
     optj.coord = opt.coord;
     optj.id = subject;
     pipe = psom_add_job(pipe,['report_' subject],'niak_brick_qc_fmri_preprocess',inj,outj,optj);
 end
 
+%% Generate file names and links for the wrappers
+file_wrap = cell(length(list_subject),1);
+list_content = cell(length(list_subject),1);
+list_wrap{1} = [opt.folder_out 'index.html'];
+list_links = sprintf('<li><a href="index.html">Group summary</a></li>\n');
+list_content{1} = 'Group statistics go here....';
+for ss = 1:length(list_subject)
+    subject = list_subject{ss};
+    list_wrap{ss+1} = [opt.folder_out 'wrapper_'  subject '.html'];
+    list_links = [list_links sprintf('<li><a href="%s">%s</a></li>\n',['wrapper_'  subject '.html'],subject)];
+    list_content{ss+1} = sprintf('<object class="internal" type="text/html" data="%s"></object>\n',[subject filesep 'report_coregister_' subject '.html']);
+end
+
+%% Read html template
+file_self = which('niak_pipeline_qc_fmri_preprocess');
+path_self = fileparts(file_self);
+file_html = [path_self filesep 'niak_index_qc_fmri_preprocess.html'];
+hf = fopen(file_html,'r');
+str_html = fread(hf,Inf,'uint8=>char')';
+fclose(hf);
+
+%% Generate the wrappers
+if opt.flag_verbose 
+    fprintf('Adding jobs to generate wrappers html...\n')
+end
+for ww = 1:length(list_wrap)
+    file_wrap = list_wrap{ww};
+    if ww==1
+       name_job = 'index_html';
+       links_ww = strrep(list_links,'<li><a href="index.html">Group summary</a></li>','<li><a class="active" href="index.html">Group summary</a></li>');
+    else
+       subject = list_subject{ww-1}; 
+       name_job = ['wrapper_' subject];
+        links_ww = strrep(list_links,sprintf('<li><a href="%s">%s</a></li>\n',['wrapper_'  subject '.html'],subject),sprintf('<li><a class="active" href="%s">%s</a></li>\n',['wrapper_'  subject '.html'],subject));
+    end 
+    str_write = strrep(str_html,'$LINKS',links_ww);
+    str_write = strrep(str_write,'$CONTENT',list_content{ww});
+    pipe.(name_job).files_out = file_wrap;
+    pipe.(name_job).opt = str_write;
+    pipe.(name_job).command = 'hf = fopen(files_out,''w+''); fprintf(hf,''%s'',opt); fclose(hf);';
+end
+
 if ~opt.flag_test
-    psom_run_pipeline(pipeline,opt.psom);
+    psom_run_pipeline(pipe,opt.psom);
 end

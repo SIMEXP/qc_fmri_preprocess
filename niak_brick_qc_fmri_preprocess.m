@@ -162,9 +162,8 @@ if ~strcmp(out.report,'gb_niak_omitted')
     end
     [path_f,name_f,ext_f] = fileparts(out.func);
     text_css = sprintf('<head>\n<style>\n#lcontainer{\n    position:relative;\n}\n#lcontainer img{\n    position:absolute;\n    top:0;\n    left:0;\n    width:50%%;\n    heigth:auto;\n}\n#rcontainer{\n    position:relative;\n}\n#rcontainer img{\n    position:absolute;\n    top:0;\n    right:0;\n    width:50%%;\n    heigth:auto;\n}\n.hide:hover{\n    opacity:0;\n}\n</style>\n</head>\n');
-    text_anat = sprintf('<div id="lcontainer">\n    <img src="%s" >\n    <img class="hide" src="%s" >\n</div>\n',[name_a ext_a],[name_t ext_t]);
-    text_func = sprintf('<div id="rcontainer">\n    <img src="%s" >\n    <img class="hide" src="%s" >\n</div>\n',[name_f ext_f],[name_a ext_a]);
+    text_anat = sprintf('<div id="lcontainer">\n    <img src="%s" >\n    <img class="hide" src="%s" >\n</div>\n',[name_t ext_t],[name_a ext_a]);
+    text_func = sprintf('<div id="rcontainer">\n    <img src="%s" >\n    <img class="hide" src="%s" >\n</div>\n',[name_a ext_a],[name_f ext_f]);
     fprintf(hf,'%s%s%s',text_css,text_anat,text_func);
     fclose(hf);
 end
-
