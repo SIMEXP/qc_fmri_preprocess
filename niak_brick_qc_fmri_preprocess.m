@@ -10,6 +10,7 @@ function [in,out,opt] = niak_brick_qc_fmri_preprocess(in,out,opt)
 % OUT.ANAT          (string) the file name for the figure of the T1 scan.
 % OUT.TEMPLATE (string) the file name for the figure of the template.
 % OUT.FUNC         (string) the file name for the figure of the functional volume.
+% OUT.REPORT     (string) the file name of the html report. 
 % OPT.FOLDER_OUT (string) where to generate the outputs. 
 % OPT.ID                (string) the subject ID used to name the figures. 
 % OPT.COORD       (array N x 3) Coordinates for the figure. The default is:
@@ -59,8 +60,8 @@ if (nargin < 2) || isempty(out)
     out = struct;
 end 
 out = psom_struct_defaults( out , ...
-    { 'anat' , 'template' , 'func' }, ...
-    { ''        , ''               , ''        });
+    { 'anat' , 'template' , 'func' , 'report' , 'style' }, ...
+    { ''        , ''               , ''        , ''           , 'style'  });
 
 % Options 
 if nargin < 3
@@ -77,15 +78,19 @@ opt.folder_out = niak_full_path(opt.folder_out);
 
 % Output file names
 if isempty(out.anat)
-    out.anat = [opt.folder_out 't1_slices.png'];
+    out.anat = [opt.folder_out 't1_slices.jpg'];
 end
 
 if isempty(out.template)
-    out.template = [opt.folder_out 'template_slices.png'];
+    out.template = [opt.folder_out 'template_slices.jpg'];
 end
 
 if isempty(out.func)
-    out.func = [opt.folder_out 'func_slices.png'];
+    out.func = [opt.folder_out 'func_slices.jpg'];
+end
+
+if isempty(out.report)
+    out.report = [opt.folder_out 'report_qc_coregister.html'];
 end
 
 % End of the initialization
@@ -121,7 +126,7 @@ if ~strcmp(out.template,'gb_niak_omitted')
     opt_v.colorbar = false;
     opt_v.colormap = 'gray';
     opt_v.limits = 'adaptative';
-    opt_v.title = sprintf('template, subject %s',opt.id);
+    opt_v.title = sprintf('       template, subject %s',opt.id);
     niak_brick_vol2img(in_v,out_v,opt_v);
 end
 
@@ -137,6 +142,23 @@ if ~strcmp(out.func,'gb_niak_omitted')
     opt_v.colorbar = false;
     opt_v.colormap = 'jet';
     opt_v.limits = 'adaptative';
-    opt_v.title = sprintf('template, subject %s',opt.id);
+    opt_v.title = sprintf('functional scan, subject %s',opt.id);
     niak_brick_vol2img(in_v,out_v,opt_v);
 end
+
+%% Generate the html report
+if ~strcmp(out.report,'gb_niak_omitted')
+    if opt.flag_verbose
+        fprintf('Generating the QC html report...\n');
+    end
+    hf = fopen(out.report,'w+');
+    [path_a,name_a,ext_a] = fileparts(out.anat);
+    [path_t,name_t,ext_t] = fileparts(out.template);
+    [path_f,name_f,ext_f] = fileparts(out.func);
+    text_css = sprintf('<head>\n<style>\n#lcontainer{\n    position:relative;\n}\n#lcontainer img{\n    position:absolute;\n    top:0;\n    left:0;\n    width:50%%;\n    heigth:auto;\n}\n#rcontainer{\n    position:relative;\n}\n#rcontainer img{\n    position:absolute;\n    top:0;\n    right:0;\n    width:50%%;\n    heigth:auto;\n}\n.hide:hover{\n    opacity:0;\n}\n</style>\n</head>\n');
+    text_anat = sprintf('<div id="lcontainer">\n    <img src="%s" >\n    <img class="hide" src="%s" >\n</div>\n',[name_a ext_a],[name_t ext_t]);
+    text_func = sprintf('<div id="rcontainer">\n    <img src="%s" >\n    <img class="hide" src="%s" >\n</div>\n',[name_f ext_f],[name_a ext_a]);
+    fprintf(hf,'%s%s%s',text_css,text_anat,text_func);
+    fclose(hf);
+end
+
