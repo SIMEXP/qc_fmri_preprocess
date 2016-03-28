@@ -17,6 +17,8 @@ function [in,out,opt] = niak_brick_qc_fmri_preprocess(in,out,opt)
 %                               [-30 , -65 , -15 ; 
 %                                  -8 , -25 ,  10 ;  
 %                                 30 ,  45 ,  60];    
+% OPT.TEMPLATE (string) if specified, this file name will be used in the report
+%   instead of OUT.TEMPLATE.
 % OPT.FLAG_VERBOSE (boolean, default true) if true, verbose on progress. 
 % OPT.FLAG_TEST (boolean, default false) if the flag is true, the brick does nothing but 
 %    update IN, OUT and OPT.
@@ -60,8 +62,8 @@ if (nargin < 2) || isempty(out)
     out = struct;
 end 
 out = psom_struct_defaults( out , ...
-    { 'anat' , 'template' , 'func' , 'report' , 'style' }, ...
-    { ''        , ''               , ''        , ''           , 'style'  });
+    { 'anat' , 'template' , 'func' , 'report' }, ...
+    { ''        , ''               , ''        , ''           });
 
 % Options 
 if nargin < 3
@@ -71,8 +73,8 @@ coord_def =[-30 , -65 , -15 ;
                       -8 , -25 ,  10 ;  
                      30 ,  45 ,  60];
 opt = psom_struct_defaults ( opt , ...
-    { 'folder_out' , 'coord'      , 'flag_test' , 'id'                 , 'flag_verbose' }, ...
-    { pwd            , coord_def , false         , 'anonymous' , true                 });
+    { 'folder_out' , 'coord'      , 'flag_test' , 'id'                 , 'template' , 'flag_verbose' }, ...
+    { pwd            , coord_def , false         , 'anonymous' , ''               , true                 });
 
 opt.folder_out = niak_full_path(opt.folder_out);
 
@@ -153,7 +155,11 @@ if ~strcmp(out.report,'gb_niak_omitted')
     end
     hf = fopen(out.report,'w+');
     [path_a,name_a,ext_a] = fileparts(out.anat);
-    [path_t,name_t,ext_t] = fileparts(out.template);
+    if ~isempty(opt.template)
+       [path_t,name_t,ext_t] = fileparts(opt.template);
+    else
+       [path_t,name_t,ext_t] = fileparts(out.template);
+    end
     [path_f,name_f,ext_f] = fileparts(out.func);
     text_css = sprintf('<head>\n<style>\n#lcontainer{\n    position:relative;\n}\n#lcontainer img{\n    position:absolute;\n    top:0;\n    left:0;\n    width:50%%;\n    heigth:auto;\n}\n#rcontainer{\n    position:relative;\n}\n#rcontainer img{\n    position:absolute;\n    top:0;\n    right:0;\n    width:50%%;\n    heigth:auto;\n}\n.hide:hover{\n    opacity:0;\n}\n</style>\n</head>\n');
     text_anat = sprintf('<div id="lcontainer">\n    <img src="%s" >\n    <img class="hide" src="%s" >\n</div>\n',[name_a ext_a],[name_t ext_t]);
