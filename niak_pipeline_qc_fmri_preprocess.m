@@ -47,6 +47,8 @@ function pipe = niak_pipeline_qc_fmri_preprocess(in,opt)
 % OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 % THE SOFTWARE.
 
+psom_gb_vars;
+
 %% Defaults
 
 % Inputs
@@ -81,9 +83,22 @@ opt = psom_struct_defaults ( opt , ...
 opt.folder_out = niak_full_path(opt.folder_out);
 opt.psom.path_logs = [opt.folder_out 'logs' filesep];
 
-%% Add the generation of summary images for all subjects
+%% Add the summary for the template
 pipe = struct;
+inj.anat = 'gb_niak_omitted';
+inj.func = 'gb_niak_omitted';
+inj.template = in.template;
+outj.anat = 'gb_niak_omitted';
+outj.func = 'gb_niak_omitted';
+outj.template = [opt.folder_out 'summary_template.jpg'];
+outj.report =  'gb_niak_omitted';
+optj.coord = opt.coord;
+optj.id = 'template';
+pipe = psom_add_job(pipe,'summary_template','niak_brick_qc_fmri_preprocess',inj,outj,optj);
+
+%% Add the generation of summary images for all subjects
 for ss = 1:length(list_subject)
+    clear inj outj optj
     subject = list_subject{ss};
     if opt.flag_verbose
         fprintf('Adding job: QC report for subject %s\n',subject);
@@ -91,26 +106,36 @@ for ss = 1:length(list_subject)
     inj.anat = in.anat.(subject);
     inj.func = in.func.(subject);
     inj.template = in.template;
-    outj.anat = [opt.folder_out subject filesep 'summary_' subject '_anat.jpg'];
-    outj.func = [opt.folder_out subject filesep 'summary_' subject '_func.jpg'];
-    outj.template = [opt.folder_out subject filesep 'summary_template.jpg'];
-    outj.report =  [opt.folder_out subject filesep 'report_coregister_' subject '.html'];
+    outj.anat = [opt.folder_out 'summary_' subject '_anat.jpg'];
+    outj.func = [opt.folder_out 'summary_' subject '_func.jpg'];
+    outj.template = 'gb_niak_omitted';
+    outj.report =  [opt.folder_out 'report_coregister_' subject '.html'];
     optj.coord = opt.coord;
     optj.id = subject;
+    optj.template = pipe.summary_template.files_out.template;
     pipe = psom_add_job(pipe,['report_' subject],'niak_brick_qc_fmri_preprocess',inj,outj,optj);
 end
+
+%% Add a spreadsheet to write the QC. 
+clear inj outj optj
+outj = [opt.folder_out 'qc_report.csv'];
+optj.list_subject = list_subject;
+pipe = psom_add_job(pipe,'init_report','niak_brick_init_qc_report','',outj,optj);
 
 %% Generate file names and links for the wrappers
 file_wrap = cell(length(list_subject),1);
 list_content = cell(length(list_subject),1);
 list_wrap{1} = [opt.folder_out 'index.html'];
 list_links = sprintf('<li><a href="index.html">Group summary</a></li>\n');
-list_content{1} = 'Group statistics go here....';
+list_content{1} = sprintf([ '<p>\n Report on quality of registration for %i subjects prepared by %s, using NIAK on the system %s, on %s.\n </p> \n ' ...
+                                           '<p>\n Click on a subject ID in the left navigation bar to access an individual report. \n</p>\n' ...
+                                           '<p>\n Hover on and off a picture to flip between the source and the target of  the registration.\n</p>\n'], ...
+                                           length(list_subject),gb_psom_user,gb_psom_localhost,datestr(now));
 for ss = 1:length(list_subject)
     subject = list_subject{ss};
     list_wrap{ss+1} = [opt.folder_out 'wrapper_'  subject '.html'];
     list_links = [list_links sprintf('<li><a href="%s">%s</a></li>\n',['wrapper_'  subject '.html'],subject)];
-    list_content{ss+1} = sprintf('<object class="internal" type="text/html" data="%s"></object>\n',[subject filesep 'report_coregister_' subject '.html']);
+    list_content{ss+1} = sprintf('<object class="internal" type="text/html" data="%s"></object>\n',['report_coregister_' subject '.html']);
 end
 
 %% Read html template
