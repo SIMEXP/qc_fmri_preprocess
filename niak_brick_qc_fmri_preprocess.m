@@ -112,7 +112,7 @@ if ~strcmp(out.anat,'gb_niak_omitted')
     opt_v.colorbar = false;
     opt_v.colormap = 'gray';
     opt_v.limits = 'adaptative';
-    opt_v.title = sprintf('structural scan, subject %s',opt.id);
+    opt_v.title = sprintf('structural scan, %s',opt.id);
     niak_brick_vol2img(in_v,out_v,opt_v);
 end
 
@@ -128,7 +128,7 @@ if ~strcmp(out.template,'gb_niak_omitted')
     opt_v.colorbar = false;
     opt_v.colormap = 'gray';
     opt_v.limits = 'adaptative';
-    opt_v.title = sprintf('       template, subject %s',opt.id);
+    opt_v.title = sprintf('       template, %s',opt.id);
     niak_brick_vol2img(in_v,out_v,opt_v);
 end
 
@@ -144,7 +144,7 @@ if ~strcmp(out.func,'gb_niak_omitted')
     opt_v.colorbar = false;
     opt_v.colormap = 'jet';
     opt_v.limits = 'adaptative';
-    opt_v.title = sprintf('functional scan, subject %s',opt.id);
+    opt_v.title = sprintf('functional scan, %s',opt.id);
     niak_brick_vol2img(in_v,out_v,opt_v);
 end
 
@@ -153,6 +153,16 @@ if ~strcmp(out.report,'gb_niak_omitted')
     if opt.flag_verbose
         fprintf('Generating the QC html report...\n');
     end
+    
+    %% Read html template
+    file_self = which('niak_pipeline_qc_fmri_preprocess');
+    path_self = fileparts(file_self);
+    file_html = [path_self filesep 'niak_template_qc_fmri_preprocess.html'];
+    hf = fopen(file_html,'r');
+    str_html = fread(hf,Inf,'uint8=>char')';
+    fclose(hf);
+
+    %% Modify template and save output
     hf = fopen(out.report,'w+');
     [path_a,name_a,ext_a] = fileparts(out.anat);
     if ~isempty(opt.template)
@@ -161,9 +171,9 @@ if ~strcmp(out.report,'gb_niak_omitted')
        [path_t,name_t,ext_t] = fileparts(out.template);
     end
     [path_f,name_f,ext_f] = fileparts(out.func);
-    text_css = sprintf('<head>\n<style>\n#lcontainer{\n    position:relative;\n}\n#lcontainer img{\n    position:absolute;\n    top:0;\n    left:0;\n    width:50%%;\n    heigth:auto;\n}\n#rcontainer{\n    position:relative;\n}\n#rcontainer img{\n    position:absolute;\n    top:0;\n    right:0;\n    width:50%%;\n    heigth:auto;\n}\n.hide:hover{\n    opacity:0;\n}\n</style>\n</head>\n');
-    text_anat = sprintf('<div id="lcontainer">\n    <img src="%s" >\n    <img class="hide" src="%s" >\n</div>\n',[name_t ext_t],[name_a ext_a]);
-    text_func = sprintf('<div id="rcontainer">\n    <img src="%s" >\n    <img class="hide" src="%s" >\n</div>\n',[name_a ext_a],[name_f ext_f]);
-    fprintf(hf,'%s%s%s',text_css,text_anat,text_func);
+    text_write = strrep(str_html,'$TEMPLATE',[name_t ext_t]);
+    text_write = strrep(text_write,'$ANAT',[name_a ext_a]);
+    text_write = strrep(text_write,'$FUNC',[name_f ext_f]);
+    fprintf(hf,'%s',text_write);
     fclose(hf);
 end

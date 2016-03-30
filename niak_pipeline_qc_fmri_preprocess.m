@@ -93,7 +93,7 @@ outj.func = 'gb_niak_omitted';
 outj.template = [opt.folder_out 'summary_template.jpg'];
 outj.report =  'gb_niak_omitted';
 optj.coord = opt.coord;
-optj.id = 'template';
+optj.id = 'MNI152';
 pipe = psom_add_job(pipe,'summary_template','niak_brick_qc_fmri_preprocess',inj,outj,optj);
 
 %% Add the generation of summary images for all subjects
@@ -161,6 +161,12 @@ for ww = 1:length(list_wrap)
         links_ww = strrep(list_links,sprintf('<li><a href="%s">%s</a></li>\n',['wrapper_'  subject '.html'],subject),sprintf('<li><a class="active" href="%s">%s</a></li>\n',['wrapper_'  subject '.html'],subject));
     end 
     str_write = strrep(str_html,'$LINKS',links_ww);
+    prev_subject = list_subject{max(1,ww-2)};
+    next_subject = list_subject{min(length(list_subject),ww)};
+    str_write = strrep(str_write,'$PREVIOUSID',prev_subject);
+    str_write = strrep(str_write,'$PREVIOUS',['wrapper_'  prev_subject '.html']);
+    str_write = strrep(str_write,'$NEXTID',next_subject);
+    str_write = strrep(str_write,'$NEXT',['wrapper_'  next_subject '.html']);
     str_write = strrep(str_write,'$CONTENT',list_content{ww});
     pipe.(name_job).files_out = file_wrap;
     pipe.(name_job).opt = str_write;
