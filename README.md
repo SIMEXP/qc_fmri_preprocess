@@ -24,4 +24,11 @@ Note that you can further configure the execution modes to use high-performance 
 ```
 niak_pipeline_qc_fmri_preprocess(files,opt);
 ```
-Once the pipeline is complete, just open `index.html`, found in the output folder, in your browser and QC away. There is also an empty spreadsheet `qc_report.csv` ready to receive commments, see [this example](https://github.com/SIMEXP/glm_connectome/blob/gh-pages/qc_report.csv). We will release at some point guidelines for tagging registration as `OK`, `Maybe` or `Fail`. The toolbox has only been tested on Linux and Octave, and may break on other OSes or Matlab. Early stages of testing.... feedback welcome!
+Once the pipeline is complete, just open `index.html`, found in the output folder, in your browser and QC away. There is also an empty spreadsheet `qc_report.csv` ready to receive commments, see [this example](https://github.com/SIMEXP/glm_connectome/blob/gh-pages/qc_report.csv). 
+
+More options, including how to choose the slices that appear in the report, can be found in the inline documentation:
+```
+help niak_pipeline_qc_fmri_preprocess
+```
+
+We will release at some point guidelines for tagging registration as `OK`, `Maybe` or `Fail`. The toolbox has only been tested on Linux and Octave, and may break on other OSes or Matlab. Early stages of testing.... feedback welcome!
