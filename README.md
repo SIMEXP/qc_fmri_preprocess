@@ -1,5 +1,5 @@
 # qc_fmri_preprocess
-A quality control report for the preprocessing of resting-state functional magnetic resonance imaging. To install, you need to download the [latest release]() with dependencies (archive ending with `-with-deps.zip`. Uncompress this archive and add the folder to your Matlab or Octave path:
+A quality control report for the preprocessing of resting-state functional magnetic resonance imaging. To install, you need to download the [latest release](https://github.com/SIMEXP/qc_fmri_preprocess/releases) with dependencies (archive ending with `-with-deps.zip`). Uncompress this archive and add the folder to your Matlab or Octave path:
 ```
 addpath(genpath('path_toolbox'))
 ```
