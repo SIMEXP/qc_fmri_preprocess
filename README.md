@@ -20,7 +20,7 @@ Finally, you can adjust the number of processors used to run the pipeline:
 ```
 opt.psom.max_queued = 4; % Will use 4 processors
 ```
-Note that you can further configure the execution modes to use high-performance computing infrastructure, see the following [tutorial](http://psom.simexp-lab.org/psom_configuration.html). You are now ready to generate the reports:
+Note that you can further configure the execution modes to use high-performance computing infrastructure, see the following [tutorial](http://psom.simexp-lab.org/psom_configuration.html) (simply replace `opt` by `opt.psom` in the tutorial). You are now ready to generate the reports:
 ```
 niak_pipeline_qc_fmri_preprocess(files,opt);
 ```
