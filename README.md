@@ -6,13 +6,13 @@ addpath(genpath('path_toolbox'))
 
 You need to describe the data in a matlab structure:
 ```
-files.anat.subject1 = 'file_anat1.nii.gz';
-files.func.subject1 = 'file_func1.nii.gz'
-files.anat.subject2 = 'file_anat2.nii.gz';
-files.func.subject2 = 'file_func2.nii.gz'
-files.template = 'template_mni.nii.gz';
+files.anat.subject1 = '/data/file_anat1.nii.gz';
+files.func.subject1 = '/data/file_func1.nii.gz'
+files.anat.subject2 = '/data/file_anat2.nii.gz';
+files.func.subject2 = '/data/file_func2.nii.gz'
+files.template = '/data/template_mni.nii.gz';
 ```
-The IDs for the subjects (here `subject1`, `subject2`, etc) are arbitrary but need to conform to matlab's restrictions on field names (in particular, does not start by numbers and does not contain `-`). You can enter as many subjects as needed. Then you need to specify the output folder:
+The IDs for the subjects (here `subject1`, `subject2`, etc) are arbitrary but need to conform to matlab's restrictions on field names (in particular, does not start by numbers and does not contain `-`). You can enter as many subjects as needed. Note that it is important to specify the full path of the datasets. Then you need to specify the output folder:
 ```
 opt.folder_out = '/home/toto/data/qc_report/';
 ```
@@ -24,5 +24,4 @@ Note that you can further configure the execution modes to use high-performance 
 ```
 niak_pipeline_qc_fmri_preprocess(files,opt);
 ```
-
-The toolbox has only been tested on Linux and Octave, and may break on other OSes or Matlab. Early stages of testing.... feedback welcome!
+Once the pipeline is complete, just open `index.html` in your browser and QC away. There is also an empty spreadsheet `qc_report.csv` ready to receive commments, see [this example](https://github.com/SIMEXP/glm_connectome/blob/gh-pages/qc_report.csv). We will release at some point guidelines for tagging registration as `OK`, `Maybe` or `Fail`. The toolbox has only been tested on Linux and Octave, and may break on other OSes or Matlab. Early stages of testing.... feedback welcome!
