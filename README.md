@@ -31,4 +31,4 @@ More options, including how to choose the slices that appear in the report, can 
 help niak_pipeline_qc_fmri_preprocess
 ```
 
-The QC report can be uploaded on github to become an [online github page](https://pages.github.com/), see [this example](http://simexp.github.io/glm_connectome/index.html). We will release at some point guidelines for tagging registration as `OK`, `Maybe` or `Fail`. The toolbox has only been tested on Linux and Octave, and may break on other OSes or Matlab. Early stages of testing.... feedback welcome!
+The QC report can be uploaded on github to become an [online github page](https://pages.github.com/), see [this example](http://simexp.github.io/glm_connectome/index.html). We will release at some point guidelines for tagging registration as `OK`, `Maybe` or `Fail`, and commenting on various artefacts. The toolbox has only been tested on Linux and Octave, and may break on other OSes or Matlab. Early stages of testing.... feedback welcome!
