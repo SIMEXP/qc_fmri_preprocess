@@ -12,7 +12,11 @@ files.anat.subject2 = '/data/file_anat2.nii.gz';
 files.func.subject2 = '/data/file_func2.nii.gz'
 files.template = '/data/template_mni.nii.gz';
 ```
-The IDs for the subjects (here `subject1`, `subject2`, etc) are arbitrary but need to conform to matlab's restrictions on field names (in particular, does not start by numbers and does not contain `-`). You can enter as many subjects as needed. Note that it is important to specify the full path of the datasets. Then you need to specify the output folder (make sure it is currently empty or does not exist, a lot of files will be generated there):
+The IDs for the subjects (here `subject1`, `subject2`, etc) are arbitrary but need to conform to matlab's restrictions on field names (in particular, does not start by numbers and does not contain `-`). You can enter as many subjects as needed. Note that it is important to specify the full path of the datasets. If the preprocessed data has been generated with NIAK, it is possible to get the list of files with the following command:
+```
+files = niak_grab_qc_fmri_preprocess('path_to_preprocess_data');
+```
+Then you need to specify the output folder (make sure it is currently empty or does not exist, a lot of files will be generated there):
 ```
 opt.folder_out = '/home/toto/data/qc_report/';
 ```
