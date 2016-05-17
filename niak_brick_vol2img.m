@@ -105,7 +105,7 @@ end
 
 %% Title
 if ~isempty(opt.title)
-    title(opt.title)
+    title(strrep(opt.title,'_','\_');
 end
 
 %% Set X axis 
