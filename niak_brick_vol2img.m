@@ -5,14 +5,16 @@ function [in,out,opt] = niak_brick_vol2img(in,out,opt)
 %
 % IN.SOURCE (string) the file name of a 3D volume
 % IN.TARGET (string, default '') the file name of a 3D volume defining the target space. 
-%   If left empty, or unspecified, IN.VOL is used as the target. 
+%   If left empty, or unspecified, OUT is the world space associated with IN.SOURCE 
+%   i.e. the volume is resamples to have no direction cosines. 
 % OUT (string) the file name for the figure. The extension will determine the type. 
 % OPT.COORD (array N x 3) coordinates to generate the slices.
 % OPT.COLORBAR (boolean, default true)
 % OPT.COLORMAP (string, default 'gray') The type of colormap. Anything supported by 
 %   the instruction `colormap` will work. 
 % OPT.TITLE (string, default '') a title for the figure. 
-% OPT.SIZE_SLICES (vector 1x2) the size of each slice (X,Y,Z) in the mosaic.
+% OPT.SIZE_IMG (vector 1x2) the size of each image in the mosaic (before concatenation in time).
+%   This is purely an output parameter.
 % OPT.LIMITS (vector 1x2) the limits for the colormap. By defaut it is using [min,max].
 %    If a string is specified, the function will implement an adaptative strategy. 
 % FLAG_DECORATION (boolean, default true) if the flag is true, produce a regular figure
@@ -49,10 +51,6 @@ in = psom_struct_defaults( in , ...
     { 'source' , 'target' }, ...
     { NaN       , ''          });
     
-if isempty(in.target)
-    in.target = in.source;
-end
-
 opt = psom_struct_defaults ( opt , ...
     { 'colorbar' , 'coord' , 'limits' , 'colormap' , 'size_slices' , 'title' , 'flag_decoration' , 'flag_test' }, ...
     { true       , NaN     , []       , 'gray'     , []            , ''      , true              , false         });
@@ -66,8 +64,15 @@ end
 ext_f = ext_f(2:end);
     
 %% Read the data 
-hdr.target = niak_read_vol(in.target);
 [hdr.source,vol] = niak_read_vol(in.source);
+if isempty(in.target)
+    N = [diag(hdr.source.info.voxel_size) zeros(3,1) ; 0 0 0 1];
+    W = N\([hdr.source.info.mat(1:3,1:3) zeros(3,1) ; 0 0 0 1]);
+    hdr.target.info.mat = W*hdr.source.info.mat;
+    hdr.target.info.dimensions = hdr.source.info.dimensions;
+else
+    hdr.target = niak_read_vol(in.target);    
+end
 
 
 %% Build image
@@ -84,6 +89,7 @@ for tt = 1:size(vol,4)
         end
     end
 end
+opt.size_img = size(img_tmp);
 
 %% image limits
 if ischar(opt.limits)
