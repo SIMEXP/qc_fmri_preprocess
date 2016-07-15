@@ -88,7 +88,7 @@ if psom_exist(file_aal)
 end
 
 if isempty(ext)
-   sample_file = {dir([path_anat filesep '*/*.*']).name}{1}
+   sample_file = {dir([path_anat filesep '*/*.*']).name}{1};
    [path_f,name_f,ext_f,flag_zip,ext_short] = niak_fileparts([path_anat filesep sample_file]);
    ext = ext_f;
 end
